@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Solar AR: Saturn Experience</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.3/aframe/build/aframe-ar.js"></script>
+
+<style>
+  body { margin:0; font-family:'Poppins',sans-serif; background:radial-gradient(circle at top,#0a0f2c,#010409 80%); color:#fff; overflow:hidden; position:relative;}
+  #starsCanvas{ position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; }
+  h1{ text-align:center; margin-top:30px; color:#f5cba7; text-shadow:0 0 15px rgba(245,203,167,0.6); font-size:2rem; position:relative; z-index:1;}
+  #infoSection{ text-align:center; margin:50px auto; width:80%; max-width:600px; background:rgba(0,0,0,0.75); padding:25px 35px; border-radius:20px; box-shadow:0 0 30px rgba(245,203,167,0.5); border:1px solid rgba(245,203,167,0.3); backdrop-filter:blur(8px); position:relative; z-index:1;}
+  #infoSection p{ margin:10px 0; font-size:1.1rem; line-height:1.6; }
+  .btn{ display:inline-block; background:#f5cba7; border:none; color:#000; font-weight:bold; padding:12px 28px; font-size:1rem; border-radius:10px; cursor:pointer; box-shadow:0 0 25px rgba(245,203,167,0.7); margin:10px; transition:0.3s ease;}
+  .btn:hover{ background:#e6b48a; }
+
+  #infoBox{
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%) translateX(30px);
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 22px 28px;
+    border-radius: 15px;
+    font-size: 1rem;
+    width: 260px;
+    opacity: 0;
+    pointer-events: none;
+    border: 2px solid #f5cba7;
+    box-shadow:
+      0 0 10px #f5cba7,
+      0 0 25px #f5cba7,
+      inset 0 0 15px rgba(245,203,167,0.35);
+    transition: opacity 0.45s ease, transform 0.45s ease;
+    z-index: 20;
+  }
+  #infoBox.show { opacity: 1; transform: translateY(-50%) translateX(0); pointer-events: auto; }
+  #infoBox h3{ margin-top:0; color:#f5cba7; text-shadow:0 0 10px rgba(245,203,167,0.6);}
+  #infoBox p{ margin:6px 0; }
+
+  #arMusicBtn{
+    position: fixed;
+    left: 20px;
+    bottom: 25px;
+    padding: 14px 22px;
+    background: #f5cba7;
+    color: black;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 20;
+    display: none;
+    box-shadow: 0 0 15px #f5cba7;
+    border: none;
+    transition: 0.3s ease;
+  }
+  #arMusicBtn:hover{ background:#e6b48a; box-shadow: 0 0 25px #f5cba7; }
+
+  #arContainer{ display:none; width:100%; height:100vh; position:relative; z-index:5; }
+  #loadingOverlay{ display:none; position:fixed; inset:0; background:rgba(10,15,44,0.95); color:#f5cba7; font-size:1.2rem; text-align:center; padding-top:40vh; z-index:999; }
+</style>
+</head>
+<body>
+
+<canvas id="starsCanvas"></canvas>
+
+<h1>🟠 Welcome to Solar AR: Saturn Experience</h1>
+
+<div id="infoSection">
+  <p id="planetText"><strong>Planet:</strong> Saturn</p>
+  <p id="distanceText"><strong>Distance from Sun:</strong> 1.43 billion km</p>
+  <p id="rotationText"><strong>Rotation Period:</strong> 10.7 hours</p>
+  <p id="descriptionText"><strong>Description:</strong> Saturn is famous for its stunning rings and is the second-largest planet in the solar system.</p>
+  <button class="btn" id="toggleLangBtn">Switch to Malay</button>
+  <button class="btn" id="startScanBtn">Start AR Scan 🚀</button>
+  <button class="btn" onclick="window.location.href='index.html'">Back to Homepage</button>
+</div>
+
+<div id="loadingOverlay">🎥 Initializing Camera... Please allow access.</div>
+<div id="arContainer"></div>
+
+<div id="infoBox">
+  <h3>🟠 Saturn</h3>
+  <p><strong>Distance from Sun:</strong> 1.43 billion km</p>
+  <p><strong>Rotation Period:</strong> 10.7 hours</p>
+  <p><strong>Diameter:</strong> 120,536 km</p>
+  <p><strong>Fun Fact:</strong> Saturn has over 80 moons and a spectacular ring system.</p>
+  <button id="toggleBoxLang" style="margin-top:10px; display:block; width:100%; padding:6px 10px; border:none; border-radius:8px; background:#f5cba7; font-weight:bold; cursor:pointer;">Switch to Malay</button>
+</div>
+
+<button id="arMusicBtn">Play Music 🎵</button>
+
+<script>
+  const canvas = document.getElementById('starsCanvas');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  const numStars = 150;
+  function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resizeCanvas); resizeCanvas();
+  function initStars(){
+    stars = [];
+    for(let i=0;i<numStars;i++){
+      stars.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, radius:Math.random()*1.5, alpha:Math.random(), delta:Math.random()*0.02 });
+    }
+  }
+  function animateStars(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const s of stars){
+      s.alpha += s.delta;
+      if(s.alpha <= 0 || s.alpha >= 1) s.delta *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.radius, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(255,255,255,'+s.alpha+')';
+      ctx.fill();
+    }
+    requestAnimationFrame(animateStars);
+  }
+  initStars(); animateStars();
+
+  const planetText = document.getElementById('planetText');
+  const distanceText = document.getElementById('distanceText');
+  const rotationText = document.getElementById('rotationText');
+  const descriptionText = document.getElementById('descriptionText');
+  const toggleBtn = document.getElementById('toggleLangBtn');
+  let isEnglish = true;
+  toggleBtn.addEventListener('click', () => {
+    if(isEnglish){
+      planetText.innerHTML = "<strong>Planet:</strong> Zuhal";
+      distanceText.innerHTML = "<strong>Jarak dari Matahari:</strong> 1.43 bilion km";
+      rotationText.innerHTML = "<strong>Tempoh Putaran:</strong> 10.7 jam";
+      descriptionText.innerHTML = "<strong>Deskripsi:</strong> Zuhal terkenal dengan cincin yang menakjubkan dan merupakan planet kedua terbesar dalam sistem suria.";
+      toggleBtn.innerText = "Switch to English";
+      isEnglish = false;
+    } else {
+      planetText.innerHTML = "<strong>Planet:</strong> Saturn";
+      distanceText.innerHTML = "<strong>Distance from Sun:</strong> 1.43 billion km";
+      rotationText.innerHTML = "<strong>Rotation Period:</strong> 10.7 hours";
+      descriptionText.innerHTML = "<strong>Description:</strong> Saturn is famous for its stunning rings and is the second-largest planet in the solar system.";
+      toggleBtn.innerText = "Switch to Malay";
+      isEnglish = true;
+    }
+  });
+
+  AFRAME.registerComponent('smooth-marker', {
+    tick: function () {
+      const marker = this.el;
+      if (marker.object3D.visible) {
+        const pos = marker.object3D.position;
+        const rot = marker.object3D.rotation;
+        this.el.object3D.position.lerp(pos, 0.3);
+        this.el.object3D.rotation.x += (rot.x - this.el.object3D.rotation.x) * 0.3;
+        this.el.object3D.rotation.y += (rot.y - this.el.object3D.rotation.y) * 0.3;
+        this.el.object3D.rotation.z += (rot.z - this.el.object3D.rotation.z) * 0.3;
+      }
+    }
+  });
+
+  const startBtn = document.getElementById('startScanBtn');
+  const infoSection = document.getElementById('infoSection');
+  const arContainer = document.getElementById('arContainer');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const infoBox = document.getElementById('infoBox');
+  const musicBtn = document.getElementById("arMusicBtn");
+
+  startBtn.addEventListener('click', () => {
+    infoSection.style.display = 'none';
+    document.querySelector('h1').innerText = "📸 Point your camera at the marker!";
+    loadingOverlay.style.display = 'block';
+
+    arContainer.innerHTML = `
+      <a-scene embedded vr-mode-ui="enabled: false" renderer="logarithmicDepthBuffer: true;"
+        arjs="sourceType: webcam; detectionMode: mono; debugUIEnabled: false;">
+        <a-assets>
+          <a-asset-item id="saturnModel" src="../assets/model/saturnewest.glb"></a-asset-item>
+          <audio id="whooshSound" src="../assets/sound/saturnsound.mp3" preload="auto"></audio>
+        </a-assets>
+
+        <a-marker id="myMarker" type="pattern" url="../assets/markers/S.patt" smooth-marker>
+          <a-entity light="type: ambient; color: #ffffff; intensity: 1.2"></a-entity>
+          <a-entity light="type: directional; color: #ffffff; intensity: 0.8" position="1 1 1"></a-entity>
+          <a-entity id="saturn" gltf-model="#saturnModel" scale="1 1 1" position="0 0.5 0"
+            rotation="0 0 0" animation="property: rotation; to: 0 360 0; loop: true; dur: 10000"></a-entity>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+      </a-scene>
+    `;
+
+    setTimeout(() => {
+      arContainer.style.display = 'block';
+      loadingOverlay.style.display = 'none';
+
+      const marker = document.getElementById('myMarker');
+      const whoosh = document.getElementById('whooshSound');
+
+      let isPlaying = false;
+      musicBtn.addEventListener("click", () => {
+        if(!isPlaying){ whoosh.play(); isPlaying=true; musicBtn.innerText="Pause Music ⏸️"; }
+        else { whoosh.pause(); isPlaying=false; musicBtn.innerText="Play Music 🎵"; }
+      });
+
+      marker.addEventListener('markerFound', () => { infoBox.classList.add('show'); musicBtn.style.display="block"; });
+      marker.addEventListener('markerLost', () => { infoBox.classList.remove('show'); musicBtn.style.display="none"; whoosh.pause(); });
+
+      const toggleBoxLang = document.getElementById('toggleBoxLang');
+      let boxEnglish = true;
+      toggleBoxLang.addEventListener('click', () => {
+        if(boxEnglish){
+          infoBox.innerHTML = `
+            <h3>🟠 Zuhal</h3>
+            <p><strong>Jarak dari Matahari:</strong> 1.43 bilion km</p>
+            <p><strong>Tempoh Putaran:</strong> 10.7 jam</p>
+            <p><strong>Diameter:</strong> 120,536 km</p>
+            <p><strong>Fakta Menarik:</strong> Zuhal mempunyai lebih 80 bulan dan sistem cincin yang menakjubkan.</p>
+            <button id="toggleBoxLang" style="margin-top:10px; display:block; width:100%; padding:6px 10px; border:none; border-radius:8px; background:#f5cba7; font-weight:bold; cursor:pointer;">Switch to English</button>
+          `;
+          boxEnglish = false;
+        } else {
+          infoBox.innerHTML = `
+            <h3>🟠 Saturn</h3>
+            <p><strong>Distance from Sun:</strong> 1.43 billion km</p>
+            <p><strong>Rotation Period:</strong> 10.7 hours</p>
+            <p><strong>Diameter:</strong> 120,536 km</p>
+            <p><strong>Fun Fact:</strong> Saturn has over 80 moons and a spectacular ring system.</p>
+            <button id="toggleBoxLang" style="margin-top:10px; display:block; width:100%; padding:6px 10px; border:none; border-radius:8px; background:#f5cba7; font-weight:bold; cursor:pointer;">Switch to Malay</button>
+          `;
+          boxEnglish = true;
+        }
+        document.getElementById('toggleBoxLang').addEventListener('click', () => toggleBoxLang.click());
+      });
+
+    }, 1500);
+  });
+</script>
+
+</body>
+</html>

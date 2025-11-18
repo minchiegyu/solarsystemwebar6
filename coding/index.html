@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar System Exploration</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Cinzel:wght@600&display=swap');
+
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Cinzel', serif;
+      background: black;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: transparent url("https://www.transparenttextures.com/patterns/stardust.png") repeat;
+      animation: moveStars 200s linear infinite;
+      z-index: -2;
+    }
+    body::after {
+      background-size: 300px 300px;
+      animation-duration: 400s;
+      opacity: 0.6;
+    }
+    @keyframes moveStars {
+      from { background-position: 0 0; }
+      to { background-position: -10000px 5000px; }
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 14px 0;
+      border-bottom: 2px solid rgba(0,234,255,0.8);
+      box-shadow: 0 0 10px rgba(0,234,255,0.7);
+      z-index: 100;
+    }
+    nav a, nav button {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1rem;
+      font-family: 'Orbitron', sans-serif;
+      padding: 6px 14px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    nav a:hover, nav button:hover {
+      background: rgba(0,234,255,0.2);
+      box-shadow: 0 0 8px #00eaff;
+      color: #00eaff;
+    }
+    .lang-toggle {
+      position: absolute;
+      right: 25px;
+      top: 10px;
+    }
+
+    header {
+      text-align: center;
+      padding: 140px 20px 70px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    header h1 {
+      font-size: 3rem;
+      margin: 0;
+      background: linear-gradient(90deg, #ff0000, #ff9900, #ffff00, #33ff00, #00ffff, #0066ff, #cc00ff);
+      background-size: 400% 400%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: rainbow 10s ease infinite, swing 3s infinite ease-in-out;
+      display: inline-block;
+      padding: 15px 30px;
+      border-radius: 20px;
+      border: 5px solid rgba(0,234,255,0.9);
+      box-shadow: 
+        0 0 15px #00eaff,
+        0 0 30px #00eaff,
+        0 0 45px #0077ff,
+        inset 0 0 10px rgba(0,234,255,0.7);
+    }
+    @keyframes rainbow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes swing {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(2deg); }
+      50% { transform: rotate(0deg); }
+      75% { transform: rotate(-2deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    header p {
+      font-size: 1.2rem;
+      margin-top: 40px;
+      color: #ffcc00;
+      text-shadow: 0 0 10px #ffcc00;
+      animation: floatText 4s ease-in-out infinite;
+    }
+
+    @keyframes floatText {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    main {
+      padding: 40px 20px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    section {
+      margin-bottom: 50px;
+    }
+
+    section h2 {
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 20px;
+      color: #00eaff;
+      text-shadow: 0 0 12px #00eaff;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00eaff; }
+      to { text-shadow: 0 0 25px #00eaff; }
+    }
+
+    section p {
+      max-width: 850px;
+      margin: auto;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      text-align: center;
+      animation: fadeIn 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0.7; }
+      to { opacity: 1; }
+    }
+
+    .planet-gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 25px;
+      justify-items: center;
+      margin-top: 30px;
+    }
+
+    .planet-card {
+      display: block; /* Make <a> block for full clickable */
+      text-decoration: none;
+      color: inherit;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      text-align: center;
+      padding: 12px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      width: 150px;
+      cursor: pointer;
+    }
+    .planet-card:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(0, 234, 255, 0.6);
+    }
+    .planet-card img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+      transition: transform 3s linear;
+    }
+    .planet-card:hover img {
+      transform: rotate(360deg);
+    }
+    .planet-card h3 {
+      margin: 0;
+      color: #fff;
+      text-shadow: 0 0 8px #00eaff;
+      font-size: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      margin-top: 25px;
+      font-size: 0.85rem;
+    }
+
+    .rocket {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      font-size: 50px;
+      transform: translateX(-50%);
+      z-index: 20;
+      opacity: 1;
+    }
+    .rocket.fly {
+      animation: rocketFly 6s linear forwards;
+    }
+    @keyframes rocketFly {
+      0% { bottom: -100px; opacity: 1; transform: translateX(-50%) scale(1); }
+      70% { bottom: 80%; opacity: 1; }
+      100% { bottom: 110%; opacity: 0; transform: translateX(-50%) scale(0.5); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#home" data-en="Home" data-bm="Laman Utama">Home</a>
+    <a href="#about" data-en="About" data-bm="Tentang">About</a>
+    <a href="#planets" data-en="Planets" data-bm="Planet">Planets</a>
+    <button class="lang-toggle" id="langToggle">BM</button>
+  </nav>
+
+  <header id="home">
+    <h1 data-en="🌌 Welcome to the Solar System 🌌" data-bm="🌌 Selamat Datang ke Sistem Suria 🌌">
+      🌌 Welcome to the Solar System 🌌
+    </h1>
+    <p data-en="Discover planets, stars, and the beauty of our galaxy"
+       data-bm="Terokai planet, bintang, dan keindahan galaksi kita">
+       Discover planets, stars, and the beauty of our galaxy
+    </p>
+    <button id="startButton" style="margin-top:20px;padding:10px 18px;font-size:15px;cursor:pointer;border-radius:10px;background:#00eaff;color:#000;font-weight:bold;border:none;">Start Experience 🚀</button>
+  </header>
+
+  <div class="rocket" id="rocket">🚀</div>
+
+  <main>
+    <section id="about">
+      <h2 data-en="About the Solar System" data-bm="Tentang Sistem Suria">About the Solar System</h2>
+      <p data-en="Our Solar System is made up of the Sun and everything bound to it by gravity — the planets Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune, as well as their moons, dwarf planets, comets, and asteroids."
+         data-bm="Sistem Suria kita terdiri daripada Matahari dan segala yang terikat padanya oleh graviti — planet Merkuri, Zuhrah, Bumi, Marikh, Musytari, Zuhal, Uranus, dan Neptun, serta bulan-bulan mereka, planet kerdil, komet, dan asteroid.">
+         Our Solar System is made up of the Sun and everything bound to it by gravity — 
+         the planets Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune,
+         as well as their moons, dwarf planets, comets, and asteroids.
+      </p>
+    </section>
+
+    <section id="planets">
+      <h2 data-en="Planets" data-bm="Planet">Planets</h2>
+      <div class="planet-gallery">
+        <a href="mercury.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Mercury_in_true_color.jpg" alt="Mercury"><h3 data-en="Mercury" data-bm="Merkuri">Mercury</h3></a>
+        <a href="venus.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg" alt="Venus"><h3 data-en="Venus" data-bm="Zuhrah">Venus</h3></a>
+        <a href="earth.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg" alt="Earth"><h3 data-en="Earth" data-bm="Bumi">Earth</h3></a>
+        <a href="mars.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg" alt="Mars"><h3 data-en="Mars" data-bm="Marikh">Mars</h3></a>
+        <a href="jupiter.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg" alt="Jupiter"><h3 data-en="Jupiter" data-bm="Musytari">Jupiter</h3></a>
+        <a href="saturn.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Saturn_during_Equinox.jpg" alt="Saturn"><h3 data-en="Saturn" data-bm="Zuhal">Saturn</h3></a>
+        <a href="uranus.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg" alt="Uranus"><h3 data-en="Uranus" data-bm="Uranus">Uranus</h3></a>
+        <a href="neptune.html" class="planet-card"><img src="https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg" alt="Neptune"><h3 data-en="Neptune" data-bm="Neptun">Neptune</h3></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 Solar System Exploration — Made for Education 🌍✨
+  </footer>
+
+  <audio id="rocketSound" src="https://www.soundjay.com/rocket/rocket-launch-01.mp3" preload="auto"></audio>
+  <script>
+    const rocket = document.getElementById("rocket");
+    const rocketSound = document.getElementById("rocketSound");
+    const startButton = document.getElementById("startButton");
+
+    function launchRocket() {
+      rocket.style.left = (Math.random() * 80 + 10) + "%";
+      rocket.classList.add("fly");
+      rocketSound.currentTime = 0;
+      rocketSound.play();
+      setTimeout(()=> rocket.classList.remove("fly"), 6000);
+    }
+
+    startButton.addEventListener("click", () => {
+      launchRocket();
+      setInterval(launchRocket, 8000);
+      startButton.style.display = "none";
+    });
+
+    // 🌐 Language Toggle
+    const toggle = document.getElementById("langToggle");
+    let currentLang = "en";
+    toggle.addEventListener("click", () => {
+      currentLang = currentLang === "en" ? "bm" : "en";
+      toggle.textContent = currentLang === "en" ? "BM" : "EN";
+      document.querySelectorAll("[data-en]").forEach(el => {
+        el.textContent = el.getAttribute(`data-${currentLang}`);
+      });
+    });
+  </script>
+</body>
+</html>
